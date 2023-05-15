@@ -1,0 +1,665 @@
+\documentclass[aspectratio=169,dvipdfmx,14pt,notheorems]{beamer}
+%%%% 和文用 %%%%%
+\usepackage{bxdpx-beamer}
+\usepackage{pxjahyper}
+\usepackage{minijs}%和文用
+\renewcommand{\kanjifamilydefault}{\gtdefault}%和文用}
+
+%%%% スライドの見た目 %%%%%
+\usetheme{Madrid}
+\usefonttheme{professionalfonts}
+\setbeamertemplate{frametitle}[default][center]
+\setbeamertemplate{navigation symbols}{}
+\setbeamercovered{transparent}%好みに応じてどうぞ）
+\setbeamertemplate{blocks}[rounded]
+\useinnertheme{circles}
+\setbeamertemplate{footline}[page number]
+\setbeamerfont{footline}{size=\normalsize,series=\bfseries}
+\setbeamercolor{footline}{fg=black,bg=black}
+%%%%
+
+%%%% 定義環境 %%%%%
+\usepackage{amsmath,amssymb}
+\usepackage{amsthm}
+\theoremstyle{definition}
+\newtheorem{theorem}{定理}
+\newtheorem{definition}{定義}
+\newtheorem{proposition}{命題}
+\newtheorem{lemma}{補題}
+\newtheorem{corollary}{系}
+\newtheorem{conjecture}{予想}
+\newtheorem*{remark}{Remark}
+\renewcommand{\proofname}{}
+%%%%%%%%%
+
+%%%%% フォント基本設定 %%%%%
+\usepackage[T1]{fontenc}%8bit フォント
+\usepackage{textcomp}%欧文フォントの追加
+\usepackage[utf8]{inputenc}%文字コードをUTF-8
+\usepackage[deluxe]{otf}%otfパッケージ
+\usepackage{lxfonts}%数式・英文ローマン体を Lxfont にする
+\usepackage{bm}%数式太字
+%%%%%%%%%%
+
+%%%%% PythonTeX %%%%%
+\usepackage[makestderr]{pythontex}
+\restartpythontexsession{\thesection}
+ 
+\title{『ロバストPython』を読もう}
+\subtitle{Let\rq{}s Read "Robust Python"}
+\author[Hayao]{Hayao Suzuki}
+\institute[BPStudy\#189]{BPStudy\#189}
+\date{May 29, 2023}
+
+\begin{document}
+
+\begin{frame}[plain]\frametitle{}
+\titlepage %表紙
+\end{frame}
+
+\section{はじめに}
+
+\begin{frame}\frametitle{Who am I ?}
+
+\begin{block}{お前誰よ}
+\begin{description}
+\item[名前] Hayao Suzuki（鈴木　駿）
+\item[Twitter] \href{https://twitter.com/CardinalXaro}{@CardinalXaro}
+\item[仕事] Software Developer @ BeProud Inc.
+\end{description}
+\end{block}
+
+\begin{center}
+\begin{itemize}
+\item 株式会社ビープラウド \includegraphics[width=3cm]{bplogo.png}
+\begin{itemize}
+\item IT勉強会支援サービス connpass \includegraphics[width=2cm]{connpass_logo_1.png}
+\item オンライン学習サービス PyQ \includegraphics[width=1cm]{pyq_logo_color.png}
+\item システム開発のためのドキュメントサービス Tracery \includegraphics[width=3cm]{tracery.png}
+\end{itemize}
+\end{itemize}
+\end{center}
+
+\end{frame}
+
+\begin{frame}\frametitle{Who am I ?}
+
+\begin{block}{監訳した技術書}
+\begin{itemize}
+\item \structure{ロバストPython}(O'Reilly Japan)
+\item \structure{入門 Python 3 第2版}(O'Reilly Japan)
+\end{itemize}
+\end{block}
+
+\begin{block}{査読した技術書（抜粋）}
+\begin{itemize}
+\item \structure{Effective Python 第2版}(O'Reilly Japan)
+\item \structure{SQLではじめるデータ分析}(O'Reilly Japan)
+\item \structure{マイクロフロントエンド}(O'Reilly Japan)
+\item \structure{マイクロサービスアーキテクチャ 第2版}(O'Reilly Japan)
+\end{itemize}
+\end{block}
+\url{https://xaro.hatenablog.jp/}にリストがあります。
+\end{frame}
+
+\begin{frame}\frametitle{Who am I ?}
+
+\begin{block}{発表リスト（抜粋）}
+\begin{itemize}
+\item \structure{レガシーDjangoアプリケーションの現代化}(DjangoCongress JP 2018)
+\item \structure{SymPyによる数式処理}(PyCon JP 2018)
+\item \structure{Pythonと楽しむ初等整数論}(PyCon mini Hiroshima 2019)
+\item \structure{君はcmathを知っているか}(PyCon mini Shizuoka 2020)
+\item \structure{インメモリーストリーム活用術}(PyCon JP 2020)
+\item \structure{組み込み関数powの知られざる進化}(PyCon JP 2021)
+\end{itemize}
+\end{block}
+\url{https://xaro.hatenablog.jp/}にリストがあります。
+\end{frame}
+
+\begin{frame}\frametitle{今日のテーマ}
+
+\begin{block}{ロバストPython}
+\begin{itemize}
+\item Patrick Viafore『Robust Python』 (O'Reilly Media)
+\item 長尾さん翻訳、鈴木監訳
+\item 長尾さん、鈴木のペアは『入門 Python 3 第2版』以来2回目
+\end{itemize}
+\end{block}
+
+\begin{exampleblock}{『ロバストPython』を読もう}
+\begin{itemize}
+\item ざっと、どんな事が書いてあるのか紹介します
+\item 384ページの内容を30分で読んだ気分になろう！
+\end{itemize}
+\end{exampleblock}
+\end{frame}
+
+\section{ロバストとは何か}
+
+\begin{frame}\frametitle{ロバストPythonの構成}
+\begin{block}{4部構成}
+\begin{description}
+\item[第I部] 型アノテーション
+\item[第II部] ユーザ定義型
+\item[第III部] 大規模な変更への対応
+\item[第IV部] セーフティネットの構築
+\end{description}
+\end{block}
+なお、第1章「ロバストPython入門」は導入となる章
+\end{frame}
+
+\begin{frame}\frametitle{従来の技術書との違い}
+
+\begin{exampleblock}{Pythonと型ヒント}
+\begin{itemize}
+\item 型ヒントはPython 3.5で導入（PEP 484）
+\item Python 3.5は2015年9月にリリース
+\end{itemize}
+\end{exampleblock}
+
+\begin{alertblock}{型ヒントの付け方はすでに知ってるよ}
+\begin{itemize}
+\item 型ヒントの付け方の解説記事や書籍は多い（8年の蓄積）
+\item 型ヒントの運用方法や考え方に踏み込んだ本は存在するのか
+\end{itemize}
+\end{alertblock}
+そもそも、中級者以上向けのPython本の絶対数が少ないよね
+\end{frame}
+
+\begin{frame}\frametitle{ロバストPythonのここがすごい}
+
+\begin{block}{ロバストPythonの特徴}
+\begin{itemize}
+\item 型ヒントについて14章にわたって詳細に解説（第I部、第II部）
+\item ロバストな設計論（第III部）
+\item 型ヒントや型だけではカバーしきれない要素も対応（第IV部）
+\end{itemize}
+\end{block}
+\end{frame}
+
+\section{第1章}
+
+\begin{frame}\frametitle{第1章 ロバストPython入門}
+
+\begin{block}{ロバストPythonってどんな本}
+要するに、本書はロバスト（頑丈/頑健/堅牢）なPython を書くための本である。（P. 1）
+\end{block}
+
+\begin{exampleblock}{そもそもロバストって何？}
+コードベースのロバストネスとは、\structure{絶えず変化しても耐久性が高く、エラーを起こさない}ことである。（P. 4）
+\end{exampleblock}
+
+\end{frame}
+
+\begin{frame}\frametitle{第1章 ロバストPython入門}
+
+\begin{block}{なぜロバストにする必要があるのか？}
+その答えの核心は\structure{コミュニケーション}にある。（中略）そのためには、将来のメンテナと直接会わなくても自分の論拠と意図が伝わるようにしたい。
+\end{block}
+
+\end{frame}
+
+\begin{frame}\frametitle{第1章 ロバストPython入門}
+
+\begin{block}{コミュニケーションの分類}
+\begin{description}
+\item[近接性] 情報の発信者と受信者の間にある時間的な距離
+\item[コスト] コミュニケーションに必要な労力
+\end{description}
+\end{block}
+問：時間的な距離は数学的な距離（空間）の性質を満たすか。
+\end{frame}
+
+\begin{frame}\frametitle{第1章 ロバストPython入門}
+
+\begin{block}{コミュニケーションの分類}
+\begin{description}
+\item[低コスト、近接性が必要] 直接的な対話、Slack
+\item[高コスト、近接性が必要] 会議、カンファレンス
+\item[高コスト、近接性が不要] メール、設計書、アジャイルボード
+\item[低コスト、近接性が不要] README、gitログ、コードのコメント
+\end{description}
+\end{block}
+\end{frame}
+
+\begin{frame}\frametitle{第1章 ロバストPython入門}
+
+\begin{block}{なぜロバストにする必要があるのか？}
+その答えの核心は\structure{コミュニケーション}にある。（中略）そのためには、将来のメンテナと直接会わなくても自分の論拠と意図が伝わるようにしたい。
+\end{block}
+
+\begin{block}{そのためには？}
+未来のメンテナに意図を伝えるには、低コストで近接性が不要なコミュニケーションが必要である。
+\end{block}
+
+\end{frame}
+
+\begin{frame}\frametitle{第1章 ロバストPython入門}
+
+\begin{block}{低コストで近接性が不要なコミュニケーション}
+\begin{itemize}
+\item コードを読むだけで理解できればよい
+\item コードを理解するのに必要な時間を最小限に抑えたい
+\end{itemize}
+
+\end{block}
+
+\begin{block}{そのためには？}
+データ型の選択は将来の開発者に対して自分の意図を表現することであり、正しいデータ型を選択すれば保守性が向上する。（P. 19）
+\end{block}
+
+\end{frame}
+
+\section{第I部 型アノテーション}
+
+\begin{frame}\frametitle{第I部 型アノテーション}
+
+\begin{block}{2章 Pythonデータ型入門}
+\begin{itemize}
+\item Pythonは強い型付け言語
+\item Pythonは動的型付け言語
+\end{itemize}
+
+\end{block}
+
+\begin{alertblock}{動的型付け言語は本質的にロバストではないのか}
+\begin{itemize}
+\item 動的型付け言語でもロバストに書ける、少し大変なだけ
+\item 静的型付け言語の場合よりもよく考える必要がある
+\item 静的型付け言語を使えば必ずしもロバストに書けるわけではない
+\end{itemize}
+\end{alertblock}
+
+\end{frame}
+
+\begin{frame}\frametitle{第I部 型アノテーション}
+
+\begin{block}{3章 型アノテーション}
+\begin{itemize}
+\item 型ヒントの構文的な付け方は知っているよね（8年の蓄積）
+\item 型ヒントはツール（mypyなど）と組み合わせて真価を発揮する
+\end{itemize}
+
+\end{block}
+
+\begin{alertblock}{型ヒントもmypyもタダではない}
+\begin{itemize}
+\item 公開API、ライブラリのエンドポイント
+\item 複雑な型、わかりにくい型
+\item mypy先生の指示に従う
+\end{itemize}
+\end{alertblock}
+
+\end{frame}
+
+\begin{frame}\frametitle{第I部 型アノテーション}
+
+\begin{block}{4章 型制約}
+\begin{itemize}
+\item \texttt{Optional}でぬるぽバグを潰そう
+\item \texttt{Union}で表現可能な状況を減そう
+\item \texttt{Literal}でさらに制約をかけよう
+\item \texttt{Final}で定数であると主張しよう
+\item \texttt{NewType}で潜在的なバグを潰そう
+\end{itemize}
+
+\end{block}
+
+\begin{alertblock}{\texttt{Annotated}のこと、時々でいいから、思い出してください}
+\begin{itemize}
+\item 任意のメタデータを追加できるが、単なるメタデータ
+\item 専用のツールができたら熱くなるかも
+\end{itemize}
+\end{alertblock}
+
+\end{frame}
+
+\begin{frame}\frametitle{第I部 型アノテーション}
+
+\begin{block}{5章 コレクション型}
+\begin{itemize}
+\item 同種コレクションと異種コレクションの概念を理解しよう
+\end{itemize}
+\end{block}
+
+\begin{exampleblock}{同種コレクション}
+格納されたすべての値が同じデータ型であるコレクション
+\end{exampleblock}
+
+\begin{exampleblock}{異種コレクション}
+異なるデータ型を含むコレクション
+\end{exampleblock}
+
+\end{frame}
+
+\begin{frame}\frametitle{第I部 型アノテーション}
+
+\begin{exampleblock}{典型的な例：JSONを辞書に変換する}
+\begin{itemize}
+\item \texttt{dict[str, Union[str, int, float, None]]}のような型は書きたくない！
+\item \texttt{dict[str, Any]}では型ヒントが形なしだ！
+\end{itemize}
+
+\end{exampleblock}
+
+\begin{block}{そんな時は\texttt{TypedDict}}
+型ヒントを内蔵した辞書
+\end{block}
+
+\begin{block}{そんな時は\texttt{dataclass}}
+自分でJSONの形式を制御できるなら\texttt{dataclass}がよい。
+\end{block}
+
+\end{frame}
+
+\begin{frame}\frametitle{第I部 型アノテーション}
+
+\begin{block}{6章 型チェッカのカスタマイズ}
+\begin{itemize}
+\item mypyでは\texttt{Optional}や\texttt{None}に関するチェックを有効にすると良いよ
+\item mypyが遅い？ならばデーモンモードやリモートキャッシュで高速化しよう
+\end{itemize}
+\end{block}
+
+\begin{exampleblock}{型チェッカはmypyだけじゃない}
+\begin{description}
+\item[Pyre] Facebook製、静的解析ツールPysaもついてくる
+\item[Pyright] Microsoft製、VSCode拡張のPylanceのベース
+\end{description}
+\end{exampleblock}
+
+\end{frame}
+
+\begin{frame}\frametitle{第I部 型アノテーション}
+
+\begin{block}{7章 実践的な型チェックの導入}
+ペインポイントを特定してコストをかけ過ぎずに型ヒントをいれよう
+\end{block}
+
+\begin{exampleblock}{まずはここから}
+\begin{itemize}
+\item 新規コードのみ型ヒント
+\item ボトムアップ（ユーティリティ、ライブラリ）に型ヒント
+\item 利益を生み出すビジネスロジックに型ヒント
+\item よく書き換える場所に型ヒント
+\item 複雑な部分に型ヒント
+\item MonkeyTypeやPytypeで自動的に付与も有効かも
+\end{itemize}
+\end{exampleblock}
+
+\end{frame}
+
+\section{第II部 ユーザ定義型}
+
+\begin{frame}\frametitle{第II部 ユーザ定義型}
+
+\begin{block}{8章 列挙型}
+静的な値のコレクションから値を1つだけ表現したい場合に使う
+\end{block}
+
+\begin{alertblock}{列挙型のアンチパターン}
+\begin{itemize}
+\item 動的に値が変化する列挙型。辞書を使おう。
+\item \texttt{IntEnum}や\texttt{IntFlag}は後方互換性のために使う。新規に使うのはバグの元。
+\end{itemize}
+\end{alertblock}
+
+\end{frame}
+
+\begin{frame}\frametitle{第II部 ユーザ定義型}
+
+\begin{block}{9章 データクラス}
+Pythonの世界を大きく変えたデータクラス（原著者一押し）
+\end{block}
+
+\begin{exampleblock}{データクラスの使いどころ}
+\begin{itemize}
+\item 異種コレクションはデータクラス、辞書は同種コレクション
+\item \texttt{TypedDict}とデータクラスは、まずはデータクラスを検討しよう
+\item \texttt{namedtuple}は後方互換性のために使う
+\end{itemize}
+\end{exampleblock}
+
+\begin{alertblock}{データクラスは万能なのか？}
+\begin{itemize}
+\item データクラスは属性同士が独立している場合のみ有効
+\end{itemize}
+\end{alertblock}
+
+\end{frame}
+
+\begin{frame}\frametitle{第II部 ユーザ定義型}
+
+\begin{block}{10章 クラス}
+\begin{itemize}
+\item 君はクラスの本当の使いどころを知っているか
+\item クラスとは、不変式である（筆者のテーゼ）
+\end{itemize}
+\end{block}
+
+\begin{exampleblock}{ユーザ定義型の使いどころ}
+\begin{description}
+\item[列挙型]  同種データ、スカラー値
+\item[辞書] 同種データ、コレクション
+\item[データクラス] 異種データ、不変式がない
+\item[クラス] 異種データ、不変式がある
+\end{description}
+\end{exampleblock}
+図10-1は印刷して壁に貼ろう
+
+\end{frame}
+
+\begin{frame}\frametitle{第II部 ユーザ定義型}
+
+\begin{block}{11章 インタフェース}
+\begin{itemize}
+\item 使いやすいインタフェースとは
+\item この章はやや観念的である
+\end{itemize}
+\end{block}
+
+\begin{exampleblock}{使いやすいインタフェースを追及する}
+\begin{itemize}
+\item 利用者のように考える（TDD、README駆動開発、ユーザビリティテスト）
+\item 特殊メソッド、コンテキストマネージャの活用
+\end{itemize}
+\end{exampleblock}
+
+\end{frame}
+
+\begin{frame}\frametitle{第II部 ユーザ定義型}
+
+\begin{block}{12章 部分型}
+\begin{itemize}
+\item 継承は置換可能性（Liskovの置換原則）に注意する
+\item 継承よりもコンポジション（合成）
+\end{itemize}
+\end{block}
+
+\begin{alertblock}{正方形は長方形か？}
+\begin{itemize}
+\item 数学的には、正方形は長方形である。
+\item 正方形を長方形の継承として表すと破綻する。
+\end{itemize}
+\end{alertblock}
+問：正方形と長方形の定義を述べよ。また、命題「正方形は長方形である」を正方形と長方形の定義に基づいて証明せよ。
+\end{frame}
+
+\begin{frame}\frametitle{第II部 ユーザ定義型}
+
+\begin{block}{13章 プロトコル}
+\begin{itemize}
+\item 静的型チェッカの穴を埋める存在
+\item ダックタイピングと静的型チェッカをつなぐプロトコル
+\item 構造的部分型と名目的部分型をつなぐプロトコル
+\end{itemize}
+\end{block}
+
+\end{frame}
+
+\begin{frame}\frametitle{第II部 ユーザ定義型}
+
+\begin{block}{14章 pydanticによる実行時型チェック}
+\begin{itemize}
+\item 静的型チェッカの穴を埋める存在
+\item 自然に入力値などをチェックできる
+\end{itemize}
+\end{block}
+
+\begin{alertblock}{pydanticはパースライブラリでもある}
+\begin{itemize}
+\item \texttt{int}ならば\texttt{\lq\lq{}123\rq\rq{}}も\texttt{5.5}も\texttt{int}に変換する
+\item \texttt{StrictInt}などを使う必要もあるかも
+\end{itemize}
+\end{alertblock}
+
+\end{frame}
+
+\section{第III部 大規模な変更への対応}
+
+\begin{frame}\frametitle{第III部 大規模な変更への対応}
+
+\begin{block}{15章 拡張性}
+\begin{itemize}
+\item 拡張性とは、システムの既存部分を変更せずに新機能を追加できるというシステムの性質
+\item 開放閉鎖の原則がベース（どちらが先だろうか？）
+\end{itemize}
+\end{block}
+
+\begin{alertblock}{原則違反の見つけ方}
+\begin{itemize}
+\item 簡単なことが難しくなっていないか
+\item 類似の機能の実装が遅れていないか
+\item 見積もりがいつも大規模になっていないか
+\item コミットに大規模な差分が含まれていないか
+\end{itemize}
+\end{alertblock}
+
+\end{frame}
+
+\begin{frame}\frametitle{第III部 大規模な変更への対応}
+
+\begin{block}{16章 依存関係}
+依存関係は3種類ある
+\begin{itemize}
+\item 物理的依存関係
+\item 論理的依存関係
+\item 時間的依存関係
+\end{itemize}
+\end{block}
+
+\begin{exampleblock}{依存関係を可視化せよ}
+\begin{itemize}
+\item サードパーティライブラリ同士の依存関係
+\item インポートモジュール間の依存関係
+\item 関数の呼び出しの可視化
+\end{itemize}
+\end{exampleblock}
+
+\end{frame}
+
+\begin{frame}\frametitle{第III部 大規模な変更への対応}
+
+\begin{block}{17章 コンポーザビリティ}
+コードをポリシーとメカニズムに分離せよ
+\begin{description}
+\item[ポリシー] ビジネスニーズを解決するための直接の責任を担うコード
+\item[メカニズム] ポリシーを実現する仕組みを提供するコード
+\end{description}
+\end{block}
+
+\end{frame}
+
+\begin{frame}\frametitle{第III部 大規模な変更への対応}
+
+\begin{block}{18章と19章}
+15章「拡張性」、16章「依存関係」、17章「コンポーザビリティ」の具体例として読もう。
+\end{block}
+
+\end{frame}
+
+\section{第IV部 セーフティネットの構築}
+
+\begin{frame}\frametitle{第IV部 セーフティネットの構築}
+
+\begin{block}{20章 静的解析}
+\begin{description}
+\item[静的解析] 本書ではPylintが紹介されているが、個人的にはflake8がよいと思っている。
+\item[複雑度チェッカ] MeCabeの循環的複雑度、空白数ヒューリスティクス
+\item[セキュリティ] Bandit
+\end{description}
+
+\end{block}
+
+\begin{alertblock}{静的解析だけに絞ってはいけない}
+複数の解析ツールを導入して防衛線を複数構築しよう
+\end{alertblock}
+
+\end{frame}
+
+\begin{frame}\frametitle{第IV部 セーフティネットの構築}
+
+\begin{block}{21章 テスト戦略}
+以下の2冊を読んでいる人にはものたりないかもしれない。
+\begin{itemize}
+\item テスト駆動Python（翔泳社）
+\item 単体テストの考え方／使い方（マイナビ出版）
+\end{itemize}
+pytestを使うと自然に実践できるかもしれない
+\end{block}
+
+\end{frame}
+
+\begin{frame}\frametitle{第IV部 セーフティネットの構築}
+
+\begin{block}{22章 受け入れテスト}
+Gherkin言語を紹介しているが、個人的にはどうだろう、という。
+\end{block}
+
+\begin{alertblock}{あるプログラマの思い出}
+過去、仕事を始めたばかりの頃、まともにプログラミングができない状態でBDDやCucumberを含むRuby on Railsのチュートリアルを読んで、BDDやCucumberがかなり嫌いになってしまった。
+それを未だに引きずっているのかもしれない。
+\end{alertblock}
+\end{frame}
+
+\begin{frame}\frametitle{第IV部 セーフティネットの構築}
+
+\begin{block}{23章 プロパティベーステスト}
+Hypothesisによるプロパティベーステストの紹介
+\end{block}
+
+\begin{exampleblock}{プロパティベーステストとは}
+固定した入出力に基づくテストではなく、入出力が満たすべき性質を記述するテスト。
+その性質を満たす値をツールが自動生成してテストケースを生成する。
+\end{exampleblock}
+
+\end{frame}
+
+\begin{frame}\frametitle{第IV部 セーフティネットの構築}
+
+\begin{block}{24章 ミューテーションテスト}
+mutmutによるミューテーションテストの紹介
+\end{block}
+
+\begin{exampleblock}{ミューテーションテストとは}
+目的としては、テスト自体をテストするテスト。
+ソースコードをツールで書き換えて既存のテストを走らせて、テストが成功してしまったものを炙りだす。
+\end{exampleblock}
+
+\end{frame}
+
+\section{まとめ}
+
+\begin{frame}\frametitle{まとめ}
+
+\begin{block}{『ロバストPython』の全体的な主張}
+\begin{itemize}
+\item 自分がコードで表現したいことをデータ型を使って明確に伝えよう
+\item データ型とはコミュニケーション手段である
+\end{itemize}
+\end{block}
+
+\end{frame}
+
+\end{document}
