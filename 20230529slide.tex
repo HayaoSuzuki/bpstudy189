@@ -1,4 +1,4 @@
-\documentclass[aspectratio=169,dvipdfmx,14pt,notheorems]{beamer}
+\documentclass[aspectratio=169,dvipdfmx,12pt,notheorems]{beamer}
 %%%% 和文用 %%%%%
 \usepackage{bxdpx-beamer}
 \usepackage{pxjahyper}
@@ -45,8 +45,8 @@
 \usepackage[makestderr]{pythontex}
 \restartpythontexsession{\thesection}
  
-\title{『ロバストPython』を読もう}
-\subtitle{Let\rq{}s Read "Robust Python"}
+\title{堅牢なPythonコードを書く方法}
+\subtitle{『ロバストPython』を読もう}
 \author[Hayao]{Hayao Suzuki}
 \institute[BPStudy\#189]{BPStudy\#189}
 \date{May 29, 2023}
@@ -76,6 +76,7 @@
 \item IT勉強会支援サービス connpass \includegraphics[width=2cm]{connpass_logo_1.png}
 \item オンライン学習サービス PyQ \includegraphics[width=1cm]{pyq_logo_color.png}
 \item システム開発のためのドキュメントサービス Tracery \includegraphics[width=3cm]{tracery.png}
+\item 2023年5月23日に創立17周年を迎えた
 \end{itemize}
 \end{itemize}
 \end{center}
@@ -86,7 +87,7 @@
 
 \begin{block}{監訳した技術書}
 \begin{itemize}
-\item \structure{ロバストPython}(O'Reilly Japan)
+\item \structure{ロバストPython}(O'Reilly Japan) \structure{New!}
 \item \structure{入門 Python 3 第2版}(O'Reilly Japan)
 \end{itemize}
 \end{block}
@@ -94,9 +95,9 @@
 \begin{block}{査読した技術書（抜粋）}
 \begin{itemize}
 \item \structure{Effective Python 第2版}(O'Reilly Japan)
-\item \structure{SQLではじめるデータ分析}(O'Reilly Japan)
 \item \structure{マイクロフロントエンド}(O'Reilly Japan)
 \item \structure{マイクロサービスアーキテクチャ 第2版}(O'Reilly Japan)
+\item \structure{SQLではじめるデータ分析}(O'Reilly Japan) \structure{New!}
 \end{itemize}
 \end{block}
 \url{https://xaro.hatenablog.jp/}にリストがあります。
@@ -119,20 +120,32 @@
 
 \begin{frame}\frametitle{今日のテーマ}
 
-\begin{block}{ロバストPython}
-\begin{itemize}
-\item Patrick Viafore『Robust Python』 (O'Reilly Media)
-\item 長尾さん翻訳、鈴木監訳
-\item 長尾さん、鈴木のペアは『入門 Python 3 第2版』以来2回目
-\end{itemize}
+\begin{block}{原著『Robust Python』}
+\begin{description}
+\item[著者] Patrick Viafore
+\item[出版社] O'Reilly Media
+\item[発行日] 2021年7月
+\end{description}
 \end{block}
 
-\begin{exampleblock}{『ロバストPython』を読もう}
+\begin{block}{邦訳『ロバストPython』}
+\begin{description}
+\item[翻訳者] 鈴木 駿 監訳、長尾 高弘 訳
+\item[出版社] O'Reilly Japan
+\item[発行日] 2023年3月
+\end{description}
+\end{block}
+長尾さん、鈴木のペアは『入門 Python 3 第2版』以来2回目
+\end{frame}
+
+\begin{frame}\frametitle{今日のテーマ}
+
+\begin{block}{『ロバストPython』を読もう}
 \begin{itemize}
 \item ざっと、どんな事が書いてあるのか紹介します
 \item 384ページの内容を30分で読んだ気分になろう！
 \end{itemize}
-\end{exampleblock}
+\end{block}
 \end{frame}
 
 \section{ロバストとは何か}
@@ -178,6 +191,17 @@
 \end{block}
 \end{frame}
 
+\begin{frame}\frametitle{ロバストPythonの主題}
+
+\begin{block}{『ロバストPython』が言いたいこと}
+\begin{itemize}
+\item データ型とはコミュニケーション手段である
+\item 自分がコードで表現したいことをデータ型を使って明確に伝えよう
+\end{itemize}
+\end{block}
+
+\end{frame}
+
 \section{第1章}
 
 \begin{frame}\frametitle{第1章 ロバストPython入門}
@@ -200,6 +224,23 @@
 
 \end{frame}
 
+\begin{frame}[fragile]\frametitle{第1章 ロバストPython入門}
+
+\begin{exampleblock}{例： 何をする関数でしょうか？}
+\begin{pygments}{python}
+def adjust_recipe(recipe, servings):
+    old_servings = recipe.pop(0)
+    factor = servings / old_servings
+    # 簡単に計測できる値だけを使ってください
+    new_recipe = {ingredient: (amount * factor, unit) 
+                  for ingredient, amount, unit in recipe} 
+    new_recipe["servings"] = servings
+    return new_recipe
+\end{pygments}
+\end{exampleblock}
+
+\end{frame}
+
 \begin{frame}\frametitle{第1章 ロバストPython入門}
 
 \begin{block}{コミュニケーションの分類}
@@ -208,18 +249,20 @@
 \item[コスト] コミュニケーションに必要な労力
 \end{description}
 \end{block}
-問：時間的な距離は数学的な距離（空間）の性質を満たすか。
 \end{frame}
 
 \begin{frame}\frametitle{第1章 ロバストPython入門}
 
-\begin{block}{コミュニケーションの分類}
-\begin{description}
-\item[低コスト、近接性が必要] 直接的な対話、Slack
-\item[高コスト、近接性が必要] 会議、カンファレンス
-\item[高コスト、近接性が不要] メール、設計書、アジャイルボード
-\item[低コスト、近接性が不要] README、gitログ、コードのコメント
-\end{description}
+\begin{block}{コミュニケーション手段のコストと近接性（図1-1）}
+\begin{center}
+\includegraphics[width=8cm]{ropy_0101.png}
+\end{center}
+%\begin{description}
+%\item[低コスト、近接性が必要] 直接的な対話、Slack
+%\item[高コスト、近接性が必要] 会議、カンファレンス
+%\item[高コスト、近接性が不要] メール、設計書、アジャイルボード
+%\item[低コスト、近接性が不要] README、gitログ、コードのコメント
+%\end{description}
 \end{block}
 \end{frame}
 
@@ -248,6 +291,26 @@
 \begin{block}{そのためには？}
 データ型の選択は将来の開発者に対して自分の意図を表現することであり、正しいデータ型を選択すれば保守性が向上する。（P. 19）
 \end{block}
+
+\end{frame}
+
+\begin{frame}[fragile]\frametitle{第1章 ロバストPython入門}
+
+\begin{exampleblock}{例： 何をする関数でしょうか？}
+\begin{pygments}{python}
+from fractions import Fraction
+
+def adjust_recipe(recipe: Recipe, servings: int) -> Recipe:
+    # 材料データのコピーを作る
+    new_ingredients = list(recipe.get_ingredients())
+    recipe.clear_ingredients()
+    for ingredient in new_ingredients:
+        ingredient.adjust_proportion(
+            Fraction(servings, recipe.servings)
+        )
+    return Recipe(servings, new_ingredients)
+\end{pygments}
+\end{exampleblock}
 
 \end{frame}
 
@@ -314,6 +377,44 @@
 \end{alertblock}
 
 \end{frame}
+
+\begin{frame}[fragile]\frametitle{第I部 型アノテーション}
+
+\begin{exampleblock}{例： 表現可能な状態は何通り？}
+\begin{pygments}{python}
+@dataclass
+class Snack:
+    name: str # 3通り
+    condiments: set[str] # 4通り
+    error_code: int # 6通り（成功が0 エラーが1から5）
+    disposed_of: bool # 2通り
+    
+snack = Snack("Hotdog", {"Mustard", "Ketchup"}, 5, False)
+\end{pygments}
+\end{exampleblock}
+答え：$3 \times 4 \times 6 \times 2 = 144$通り。\texttt{None}も許容すると？
+\end{frame}
+
+\begin{frame}[fragile]\frametitle{第I部 型アノテーション}
+
+\begin{exampleblock}{例： 表現可能な状態は何通り？}
+\begin{pygments}{python}
+@dataclass
+class Snack:
+    name: str  # 3通り
+    condiments: set[str]  # 4通り
+
+@dataclass 
+class Error:
+    error_code: int # 5通り（成功パターンを取り除ける）
+    disposed_of: bool  # 2通り
+
+snack: Union[Snack, Error] = Snack("Hotdog", {"Mustard", "Ketchup"})
+\end{pygments}
+\end{exampleblock}
+答え：$3 \times 4 + 5 \times 2 = 22$通り。
+\end{frame}
+
 
 \begin{frame}\frametitle{第I部 型アノテーション}
 
@@ -438,15 +539,17 @@ Pythonの世界を大きく変えたデータクラス（原著者一押し）
 \end{itemize}
 \end{block}
 
-\begin{exampleblock}{ユーザ定義型の使いどころ}
-\begin{description}
-\item[列挙型]  同種データ、スカラー値
-\item[辞書] 同種データ、コレクション
-\item[データクラス] 異種データ、不変式がない
-\item[クラス] 異種データ、不変式がある
-\end{description}
-\end{exampleblock}
-図10-1は印刷して壁に貼ろう
+\end{frame}
+
+\begin{frame}\frametitle{第II部 ユーザ定義型}
+
+\begin{block}{適切な抽象化の選び方（図10-1）}
+\begin{center}
+\includegraphics[width=15cm]{ropy_1001.png} \\
+印刷して壁に貼ろう
+\end{center}
+\end{block}
+
 
 \end{frame}
 
@@ -496,6 +599,26 @@ Pythonの世界を大きく変えたデータクラス（原著者一押し）
 \end{itemize}
 \end{block}
 
+\end{frame}
+
+\begin{frame}[fragile]\frametitle{第II部 ユーザ定義型}
+
+\begin{exampleblock}{構造的部分型：データ型の構造を基礎とする部分型}
+\begin{pygments}{python}
+class ShuffleIterator:  
+    def __iter__(self):
+        ...
+    def __next__(self):
+        ...
+\end{pygments}
+\end{exampleblock}
+
+\begin{exampleblock}{名目的部分型：データ型の名前を基礎とする部分型}
+\begin{pygments}{python}
+class ShuffleIterator(Iterator):  
+        ...
+\end{pygments}
+\end{exampleblock}
 \end{frame}
 
 \begin{frame}\frametitle{第II部 ユーザ定義型}
@@ -571,12 +694,29 @@ Pythonの世界を大きく変えたデータクラス（原著者一押し）
 
 \end{frame}
 
+\begin{frame}[fragile]\frametitle{第III部 大規模な変更への対応}
+
+\begin{exampleblock}{例： ポリシーとメカニズムの分離}
+\begin{pygments}{python}
+def repeat(times: int = 1) -> collections.abc.Callable
+    def _repeat(func: collections.abc.Callable):
+        @functools.wrap(func)
+        def _wrapper(*args, **kwargs):
+            for _ in range(times):
+                func(*args, **kwargs)
+        return _wrapper
+    return _repeat
+\end{pygments}
+\end{exampleblock}
+メカニズム（関数を繰り返し呼び出す）とポリシー（関数の中身）をデコレータで分離する。
+\end{frame}
+
 \begin{frame}\frametitle{第III部 大規模な変更への対応}
 
 \begin{block}{18章と19章}
 15章「拡張性」、16章「依存関係」、17章「コンポーザビリティ」の具体例として読もう。
 \end{block}
-
+具体的な設計論についてはオライリーからいい本がでるらしい...？
 \end{frame}
 
 \section{第IV部 セーフティネットの構築}
@@ -618,7 +758,7 @@ Gherkin言語を紹介しているが、個人的にはどうだろう、とい�
 \end{block}
 
 \begin{alertblock}{あるプログラマの思い出}
-過去、仕事を始めたばかりの頃、まともにプログラミングができない状態でBDDやCucumberを含むRuby on Railsのチュートリアルを読んで、BDDやCucumberがかなり嫌いになってしまった。
+過去、仕事を始めたばかりの頃、まともにプログラミングができない状態でBDDやCucumberを含むRuby on Railsのチュートリアルを読んで、BDDやCucumberが苦手になった。
 それを未だに引きずっているのかもしれない。
 \end{alertblock}
 \end{frame}
@@ -643,7 +783,7 @@ mutmutによるミューテーションテストの紹介
 \end{block}
 
 \begin{exampleblock}{ミューテーションテストとは}
-目的としては、テスト自体をテストするテスト。
+テスト自体をテストするテスト。
 ソースコードをツールで書き換えて既存のテストを走らせて、テストが成功してしまったものを炙りだす。
 \end{exampleblock}
 
@@ -653,10 +793,33 @@ mutmutによるミューテーションテストの紹介
 
 \begin{frame}\frametitle{まとめ}
 
-\begin{block}{『ロバストPython』の全体的な主張}
+\begin{block}{『ロバストPython』が言いたいこと}
 \begin{itemize}
-\item 自分がコードで表現したいことをデータ型を使って明確に伝えよう
 \item データ型とはコミュニケーション手段である
+\item 自分がコードで表現したいことをデータ型を使って明確に伝えよう
+\end{itemize}
+\end{block}
+
+\end{frame}
+
+\begin{frame}\frametitle{まとめ}
+
+\begin{block}{さっそく購入しよう}
+\begin{itemize}
+\item \url{https://www.oreilly.co.jp/books/9784814400171/}
+\item \url{https://www.ohmsha.co.jp/book/9784814400171/}
+\end{itemize}
+\end{block}
+
+\begin{block}{オライリー学習プラットフォームとは}
+\begin{itemize}
+\item \url{https://www.oreilly.co.jp/online-learning/}
+\item 6万冊以上の書籍（日本語書籍もある！）
+\item 3万時間以上の動画
+\item 業界エキスパートによるライブイベント
+\item インタラクティブなシナリオとサンドボックスを使った実践的な学習
+\item 公式認定試験対策資料
+\item 『ロバストPython』もオライリー学習プラットフォームで読み放題（予定）
 \end{itemize}
 \end{block}
 
